@@ -98,14 +98,14 @@ class Tree {
  * we can think about which pairs each edge will contribute to and how
  * much it will contribute to them.
  *
- * Consider a node x with one child in the set, u1. u1 must form pairs
+ * Consider a node x with one descendant in the set, u1. u1 must form pairs
  * with [u2, ..., uk], and these pairs must traverse the edge between
  * node x and its parent (if a pair did not cross this edge, both nodes
- * would be children of x). Thus this edge would contribute u1 * u2 for
+ * would be descendants of x). Thus this edge would contribute u1 * u2 for
  * pair (u1,u2), u1 * u3 for pair (u1,u3), etc., totaling:
  *     u1 * (sum(u2, ..., uk))
  *
- * Now consider that a node x has two children: u1 and u2. u1 will form
+ * Now consider that a node x has two descendants: u1 and u2. u1 will form
  * pairs with [u3, ..., uk] the same as in the example above. u2 will
  * also form pairs with [u3, ..., uk]. u1 and u2 pair with each other,
  * but this pair does not cross this edge. Thus this edge would
@@ -114,9 +114,9 @@ class Tree {
  *     = (u1 + u2) (u3 + ... + uk)
  *
  * Generalized, each edge contributes:
- *     sum(children in set) * sum(non-children in set)
+ *     sum(descendants in set) * sum(non-descendants in set)
  *
- * We can sum this over all edges while finding sum(children of x in set)
+ * We can sum this over all edges while finding sum(descendants of x in set)
  * by traversing upwards from the bottom of the tree, determined previously
  * via a BFS.
  */
@@ -134,7 +134,7 @@ uint64_t solve_query(const vector<int>& ordered,
         query_sum += x;
         in_query[x] = true;
     }
-    vector<uint64_t> lineage(parents.size(), 0);     // lineage[x] = sum(nodes in query who are descendants of x, including x)
+    vector<uint64_t> descendants(parents.size(), 0); // descendants[x] = sum(nodes in query who are descendants of x, including x)
     uint64_t ans = 0;
 
     for (auto it = ordered.rbegin(); it != ordered.rend(); ++it) {
@@ -142,12 +142,12 @@ uint64_t solve_query(const vector<int>& ordered,
         int parent = parents[x];
 
         if (in_query[x]) {
-            lineage[x] += x;
+            descendants[x] += x;
         }
-        lineage[parent] += lineage[x];
+        descendants[parent] += descendants[x];
 
 
-        uint64_t contr = (lineage[x] % MOD * (query_sum - lineage[x]) % MOD);
+        uint64_t contr = (descendants[x] % MOD * (query_sum - descendants[x]) % MOD);
         ans = (ans + contr) % MOD;
     }
 
